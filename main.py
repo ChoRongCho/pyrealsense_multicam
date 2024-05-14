@@ -18,5 +18,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # main()
-    extract_video()
+    main()
+    # extract_video()
