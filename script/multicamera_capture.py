@@ -21,6 +21,7 @@ class CaptureMulVideo:
 
         self.recording = False
         self.out = None
+        self.check_dir()
 
         self.image_save_name_1 = ""
         self.image_save_name_2 = ""
@@ -30,6 +31,13 @@ class CaptureMulVideo:
         # camera info
         self.pp, self.ff = 0.0, 0.0
         self.device_product_line = None
+
+    def check_dir(self):
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
+            print(f"{self.save_dir} created. ")
+        else:
+            print(f"{self.save_dir} already exists. ")
 
     def initialize_camera(self):
         realsense_ctx = rs.context()
