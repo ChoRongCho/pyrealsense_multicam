@@ -1,9 +1,9 @@
 import os.path
+from copy import deepcopy
 
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-from copy import deepcopy
 
 
 class CaptureMulVideo:
@@ -31,13 +31,12 @@ class CaptureMulVideo:
         self.pp, self.ff = 0.0, 0.0
         self.device_product_line = None
 
-
     def initialize_camera(self):
         realsense_ctx = rs.context()
         devices = realsense_ctx.query_devices()
         for dev in devices:
             dev.hardware_reset()
-        
+
         for i in range(len(realsense_ctx.devices)):
             detected_camera = realsense_ctx.devices[i].get_info(rs.camera_info.serial_number)
             self.connected_devices.append(detected_camera)
@@ -61,13 +60,13 @@ class CaptureMulVideo:
         if not depth_frame or not color_frame:
             continue_sig = 1
             return continue_sig
-            
+
         # Convert images to numpy arrays
         depth_image = np.asanyarray(depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
 
         # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-        depth_colormap= cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.5), cv2.COLORMAP_JET)
+        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.5), cv2.COLORMAP_JET)
         return color_image, depth_colormap, continue_sig
 
     def video_recoder(self, name):
@@ -81,13 +80,13 @@ class CaptureMulVideo:
         self.initialize_camera()
         pipeline1, config1 = self.camera_pipeline(self.connected_devices[0])
         pipeline2, config2 = self.camera_pipeline(self.connected_devices[1])
-        
+
         pipeline1.start(config1)
         pipeline2.start(config2)
 
         out_1 = self.video_recoder(name=self.save_name_1)
         out_2 = self.video_recoder(name=self.save_name_2)
-        
+
         print("\n\n\n")
         print("Start Streaming. \nIf you want to save a video, press s")
         print("If you want to save an image, press c")
@@ -100,8 +99,8 @@ class CaptureMulVideo:
                 color2, depth2, cs2 = self.capture_pipeline(pipeline=pipeline2)
                 if cs1 or cs2:
                     continue
-                # Stack all images horizontally
 
+                # show center of image
                 view_color1 = deepcopy(color1)
                 view_color2 = deepcopy(color2)
                 cv2.circle(view_color1, (320, 240), 5, (0, 0, 255), -1)
@@ -110,21 +109,17 @@ class CaptureMulVideo:
                 images1 = np.hstack((view_color1, view_color2))
                 # images2 = np.hstack((depth1, depth2))
                 # images = np.vstack((images1, images2))
-                # Show images from both cameras
-                # cv2.namedWindow('RealSense', cv2.WINDOW_NORMAL)
-                # cv2.waitKey(1)
-
                 out_1.write(color1)
                 out_2.write(color2)
                 cv2.imshow('RealSense', images1)
-
+                # cv2.imshow("Two Images", images)
 
                 key = cv2.waitKey(1) & 0xFF
                 if key == self.capture_key:
                     # save images
                     self.capture_count += 1
-                    self.image_save_name_1 = f"capture_top_{self.capture_count}.png"
-                    self.image_save_name_2 = f"capture_side_{self.capture_count}.png"
+                    self.image_save_name_1 = f"capture_cam1_{self.capture_count}.png"
+                    self.image_save_name_2 = f"capture_cam2_{self.capture_count}.png"
                     cv2.imwrite(os.path.join(self.save_dir, self.image_save_name_1), color1)
                     cv2.imwrite(os.path.join(self.save_dir, self.image_save_name_2), color2)
                     print(f"Save image, save count = {self.capture_count}\n")
@@ -138,8 +133,8 @@ class CaptureMulVideo:
 
                         self.recording = False
                         self.save_count += 1
-                        self.save_name_1 = f"capture_top_{self.save_count}.avi"
-                        self.save_name_2 = f"capture_side_{self.save_count}.avi"
+                        self.save_name_1 = f"capture_cam1_{self.save_count}.avi"
+                        self.save_name_2 = f"capture_cam2_{self.save_count}.avi"
 
                     else:
                         self.recording = True
@@ -161,7 +156,5 @@ class CaptureMulVideo:
             if out_1 is not None:
                 out_1.release()
                 out_2.release()
-                
+
             cv2.destroyAllWindows()
-
-
