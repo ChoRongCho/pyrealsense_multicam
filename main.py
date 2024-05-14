@@ -5,9 +5,9 @@ from script.multicamera_capture import CaptureMulVideo
 def extract_video():
     root = tk.Tk()
     app = VideoToFramesGUI(root,
-                           video_path="data/my_data/obj8_capture_side_19.avi",
-                           name="obj1",
-                           save_dir="./result/")
+                           video_path="data/scene1/SuperShy.mp4",
+                           name="NewJeans",
+                           save_dir="./result/scene1")
     root.mainloop()
 
 
@@ -18,4 +18,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    extract_video()
